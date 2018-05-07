@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"html/template"
 	"io/ioutil"
-	"os"
+	"net/http"
 )
 
 // 본격적인 데이터가 들어가는 구조체
@@ -20,7 +21,7 @@ type items struct {
 }
 */
 type body struct {
-	Item []item `xml:"items>item"`
+	Item item `xml:"items>item"`
 }
 
 type response struct {
@@ -28,16 +29,16 @@ type response struct {
 	Body    body     `xml:"body"`
 }
 
-func main() {
+func thisTime() response {
 	var fine response
 
-	xp, err := os.Open("test.xml")
+	resp, err := http.Get("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=OOtkvfDic1VY%2FlqF%2Fwf57rsYRL8j5a7zXlqNVby7h9SKOo4Vf0khrnDceMU3%2FAfnSGxxTAqYF41jf8zb%2BkuHoQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&stationName=연향동&dataTerm=DAILY&ver=1.3")
 	if err != nil {
 		panic(err)
 	}
-	defer xp.Close()
+	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(xp)
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -46,5 +47,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(fine)
+	return fine
+}
+
+func sender(w http.ResponseWriter, r *http.Request) {
+	fine := thisTime()
+	fmt.Println(fine.Body.Item)
+	t, _ := template.ParseFiles("index.html")
+	t.Execute(w, fine.Body.Item)
+}
+
+func main() {
+	server := http.Server{
+		Addr: ":8080",
+	}
+	http.HandleFunc("/", sender)
+	server.ListenAndServe()
 }
