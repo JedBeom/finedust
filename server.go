@@ -13,6 +13,8 @@ type item struct {
 	Time      string `xml:"dataTime"`
 	Pm10Value int    `xml:"pm10Value"`
 	Pm25Value int    `xml:"pm25Value"`
+	Pm10Rate  int
+	Pm25Rate  int
 }
 
 /*
