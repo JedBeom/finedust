@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
-	//"log"
+	"log"
 	"net/http"
 )
 
 // 본격적인 데이터가 들어가는 구조체
 type item struct {
-	Time      string `xml:"dataTime"`
-	Pm10Value int    `xml:"pm10Value"`
-	Pm25Value int    `xml:"pm25Value"`
-	Pm10Rate  int
-	Pm25Rate  int
-	//HangulRate string
+	Time       string `xml:"dataTime"`
+	Pm10Value  int    `xml:"pm10Value"`
+	Pm25Value  int    `xml:"pm25Value"`
+	Pm10Rate   int
+	Pm25Rate   int
+	MixedRate  int
+	HangulRate string
 }
 
 /*
@@ -34,7 +35,7 @@ type response struct {
 }
 
 func thisTime() response {
-	var fine response
+	var Item response
 
 	resp, err := http.Get("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=OOtkvfDic1VY%2FlqF%2Fwf57rsYRL8j5a7zXlqNVby7h9SKOo4Vf0khrnDceMU3%2FAfnSGxxTAqYF41jf8zb%2BkuHoQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&stationName=장천동&dataTerm=DAILY&ver=1.3")
 	if err != nil {
@@ -47,11 +48,11 @@ func thisTime() response {
 		panic(err)
 	}
 
-	err = xml.Unmarshal(data, &fine)
+	err = xml.Unmarshal(data, &Item)
 	if err != nil {
 		panic(err)
 	}
-	return fine
+	return Item
 }
 
 func rater(Item item) item {
@@ -102,32 +103,66 @@ func rater(Item item) item {
 
 func sender(w http.ResponseWriter, r *http.Request) {
 	full := thisTime()
-	fine := full.Body.Item
-	fine = rater(fine)
+	Item := full.Body.Item
+	Item = rater(Item)
+	Item = MixingRatesAndGiveAHangulRate(Item)
 	t, err := template.ParseFiles("index.html")
 	if err != nil {
 		fmt.Println("Error from template:", err)
 	}
-	fmt.Println(fine.Time)
-	t.Execute(w, fine)
+	fmt.Println(Item)
+	t.Execute(w, Item)
+}
+
+func MixingRatesAndGiveAHangulRate(Item item) item {
+	if Item.Pm10Rate >= Item.Pm25Rate {
+		Item.MixedRate = Item.Pm10Rate
+	} else if Item.Pm10Rate < Item.Pm25Rate {
+		Item.MixedRate = Item.Pm25Rate
+	} else {
+		log.Println("Error on Logic.")
+	}
+	var rate string
+
+	switch Item.MixedRate {
+	case 1:
+		rate = "최고"
+	case 2:
+		rate = "좋음"
+	case 3:
+		rate = "양호"
+	case 4:
+		rate = "보통"
+	case 5:
+		rate = "나쁨"
+	case 6:
+		rate = "상당히 나쁨"
+	case 7:
+		rate = "매우 나쁨"
+	case 8:
+		rate = "최악"
+	}
+	Item.HangulRate = rate
+	return Item
 }
 
 func main() {
 	port := ":8080"
 	fmt.Println("Server Started at port", port)
 	server := http.Server{
-		Addr: ":8080",
+		Addr: port,
 	}
+	files := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", files))
 	http.HandleFunc("/", sender)
-	//http.Handle("/static", http.FileServer(http.Dir("static")))
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Error on ListenAndServe()")
 	}
 	/*
 		full := thisTime()
-		fine := full.Body.Item
-		fine = rater(fine)
-		fmt.Println(fine)
+		Item := full.Body.Item
+		Item = rater(Item)
+		fmt.Println(Item)
 	*/
 }
