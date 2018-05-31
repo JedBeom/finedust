@@ -3,9 +3,11 @@
     <head>
         <meta charset=utf-8>
         <title>현재 학교의 미세먼지</title>
+        <link rel="stylesheet" type="text/css" href="static/style.css">
+        <script src="static/script.js"></script>
     </head>
     <body>
-        <h1>{{ .Time }}</h1>
-        <p>{{ .HangulRate }}</p>
+        <p class="time">{{ .Time }}</p>
+        <p class="rate">{{ .HangulRate }}</p>
     </body>
 </html>
