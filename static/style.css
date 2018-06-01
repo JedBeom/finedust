@@ -2,4 +2,21 @@
 
 body {
     font-family: 'Noto Sans KR', sans-serif;
+    padding: 0px;
+    margin: 0px;
+}
+
+.rate {
+    text-align: center;
+    font-size: 50em;
+    padding: 0%;
+    margin: 0%;
+    line-height: 1em;
+}
+
+.time {
+    text-align: center;
+    font-size: 5em;
+    padding: 0%;
+    margin: 0%;
 }

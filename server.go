@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os/exec"
+	"runtime"
 )
 
 // 본격적인 데이터가 들어가는 구조체
@@ -114,6 +116,24 @@ func sender(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, Item)
 }
 
+// open opens the specified URL in the default browser of the user.
+func open(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "cmd"
+		args = []string{"/c", "start"}
+	case "darwin":
+		cmd = "open"
+	default: // "linux", "freebsd", "openbsd", "netbsd"
+		cmd = "xdg-open"
+	}
+	args = append(args, url)
+	return exec.Command(cmd, args...).Start()
+}
+
 func MixingRatesAndGiveAHangulRate(Item item) item {
 	if Item.Pm10Rate >= Item.Pm25Rate {
 		Item.MixedRate = Item.Pm10Rate
@@ -155,6 +175,7 @@ func main() {
 	files := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", files))
 	http.HandleFunc("/", sender)
+	go open("http://localhost:8080")
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Error on ListenAndServe()")
