@@ -110,9 +110,9 @@ func sender(w http.ResponseWriter, r *http.Request) {
 	Item = MixingRatesAndGiveAHangulRate(Item)
 	t, err := template.ParseFiles("index.html")
 	if err != nil {
-		fmt.Println("Error from template:", err)
+		log.Println("Error from template:", err)
 	}
-	fmt.Println(Item)
+	log.Println(r.Header.Get("X-FORWARDED-FOR"))
 	t.Execute(w, Item)
 }
 
