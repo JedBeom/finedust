@@ -4,10 +4,14 @@
         <meta charset=utf-8>
         <title>현재 학교의 미세먼지</title>
         <link rel="stylesheet" type="text/css" href="static/style.css">
-        <script src="static/script.js"></script>
+        <META HTTP-EQUIV="refresh" CONTENT="1800">
+        <style>
+        body {
+            background-color: {{ .Background }};
+        }
+        </style>
     </head>
     <body>
-        <script>toggleFullScreen()</script>
         <p class="time">{{ .Time }}</p>
         <p class="rate">{{ .HangulRate }}</p>
     </body>

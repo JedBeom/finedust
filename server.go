@@ -20,6 +20,7 @@ type item struct {
 	Pm25Rate   int
 	MixedRate  int
 	HangulRate string
+	Background string
 }
 
 /*
@@ -143,26 +144,36 @@ func MixingRatesAndGiveAHangulRate(Item item) item {
 		log.Println("Error on Logic.")
 	}
 	var rate string
+	var color string
 
 	switch Item.MixedRate {
 	case 1:
 		rate = "최고"
+		color = "#4b74b8"
 	case 2:
 		rate = "좋음"
+		color = "#5c98d1"
 	case 3:
 		rate = "양호"
+		color = "#63abc0"
 	case 4:
 		rate = "보통"
+		color = "#5b8f4a"
 	case 5:
 		rate = "나쁨"
+		color = "#de8b2f"
 	case 6:
 		rate = "상당히 나쁨"
+		color = "#c94e2c"
 	case 7:
 		rate = "매우 나쁨"
+		color = "#b83134"
 	case 8:
 		rate = "최악"
+		color = "#262626"
 	}
 	Item.HangulRate = rate
+	Item.Background = color
 	return Item
 }
 
