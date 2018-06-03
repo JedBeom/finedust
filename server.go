@@ -212,7 +212,7 @@ func main() {
 
 	//Open Chrome on this computer
 	go open("http://localhost:8080")
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	//Make Full-Size Screen
 	go robotgo.KeyTap("f11")
 
