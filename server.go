@@ -3,13 +3,15 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/go-vgo/robotgo"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os/exec"
 	"runtime"
+	"time"
+
+	"github.com/go-vgo/robotgo"
 )
 
 // 본격적인 데이터가 들어가는 구조체
@@ -41,9 +43,9 @@ type response struct {
 
 func thisTime(stationName string) response {
 	var full response
-	full := response{Body: body{Item: item{stationName: stationName}}}
+	full = response{Body: body{Item: item{stationName: stationName}}}
 
-	link := fmt.Sprintf("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=OOtkvfDic1VY%2FlqF%2Fwf57rsYRL8j5a7zXlqNVby7h9SKOo4Vf0khrnDceMU3%2FAfnSGxxTAqYF41jf8zb%2BkuHoQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&stationName=%v&dataTerm=DAILY&ver=1.3", stationName)
+	link := fmt.Sprintf("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=OOtkvfDic1VY%%2FlqF%%2Fwf57rsYRL8j5a7zXlqNVby7h9SKOo4Vf0khrnDceMU3%%2FAfnSGxxTAqYF41jf8zb%%2BkuHoQ%%3D%%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&stationName=%v&dataTerm=DAILY&ver=1.3", stationName)
 
 	resp, err := http.Get(link)
 	if err != nil {
@@ -197,7 +199,8 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", files))
 	http.HandleFunc("/", sender)
 	go open("http://localhost:8080")
-	robotgo.KeyTap("F11")
+	time.Sleep(1 * time.Second)
+	go robotgo.KeyTap("f11")
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Error on ListenAndServe()")
