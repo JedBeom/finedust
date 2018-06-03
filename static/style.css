@@ -7,13 +7,22 @@ body {
     color: white;
 }
 
-.rate {
+.short {
     text-align: center;
     font-size: 48em;
     padding: 0%;
     margin: 0%;
     line-height: 1em;
 }
+
+.long {
+    text-align: center;
+    font-size: 24em;
+    padding: 0%;
+    margin: 0%;
+    line-height: 1em;
+}
+
 
 .time {
     text-align: center;

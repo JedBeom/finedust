@@ -14,6 +14,10 @@
     <body>
         <p class="time">{{ .Time }}</p>
         <p class="time">미세먼지 주의하세요!</p>
-        <p class="rate">{{ .HangulRate }}</p>
+        {{ if .IsHangulRateLong }}
+        <p class="long">{{ .HangulRate }}</p>
+        {{ else }}
+        <p class="short">{{ .HangulRate }}</p>
+        {{ end }}
     </body>
 </html>
