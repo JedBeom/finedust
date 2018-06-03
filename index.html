@@ -6,13 +6,14 @@
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <META HTTP-EQUIV="refresh" CONTENT="1800">
         <style>
-        body {
-            background-color: {{ .Background }};
-        }
+            body {
+                background-color: {{ .Background }};
+            }
         </style>
     </head>
     <body>
         <p class="time">{{ .Time }}</p>
+        <p class="time">미세먼지 주의하세요!</p>
         <p class="rate">{{ .HangulRate }}</p>
     </body>
 </html>

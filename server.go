@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/go-vgo/robotgo"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -13,14 +14,15 @@ import (
 
 // 본격적인 데이터가 들어가는 구조체
 type item struct {
-	Time       string `xml:"dataTime"`
-	Pm10Value  int    `xml:"pm10Value"`
-	Pm25Value  int    `xml:"pm25Value"`
-	Pm10Rate   int
-	Pm25Rate   int
-	MixedRate  int
-	HangulRate string
-	Background string
+	Time        string `xml:"dataTime"`
+	Pm10Value   int    `xml:"pm10Value"`
+	Pm25Value   int    `xml:"pm25Value"`
+	Pm10Rate    int
+	Pm25Rate    int
+	MixedRate   int
+	HangulRate  string
+	Background  string
+	stationName string
 }
 
 /*
@@ -37,10 +39,13 @@ type response struct {
 	Body    body     `xml:"body"`
 }
 
-func thisTime() response {
-	var Item response
+func thisTime(stationName string) response {
+	var full response
+	full := response{Body: body{Item: item{stationName: stationName}}}
 
-	resp, err := http.Get("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=OOtkvfDic1VY%2FlqF%2Fwf57rsYRL8j5a7zXlqNVby7h9SKOo4Vf0khrnDceMU3%2FAfnSGxxTAqYF41jf8zb%2BkuHoQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&stationName=장천동&dataTerm=DAILY&ver=1.3")
+	link := fmt.Sprintf("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=OOtkvfDic1VY%2FlqF%2Fwf57rsYRL8j5a7zXlqNVby7h9SKOo4Vf0khrnDceMU3%2FAfnSGxxTAqYF41jf8zb%2BkuHoQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&stationName=%v&dataTerm=DAILY&ver=1.3", stationName)
+
+	resp, err := http.Get(link)
 	if err != nil {
 		panic(err)
 	}
@@ -51,11 +56,16 @@ func thisTime() response {
 		panic(err)
 	}
 
-	err = xml.Unmarshal(data, &Item)
+	err = xml.Unmarshal(data, &full)
 	if err != nil {
-		panic(err)
+		log.Printf("I've got an error while Unmarshal XML file. stationName: %v", stationName)
+		if stationName != "장천동" {
+			full = thisTime("장천동")
+		} else {
+			full = thisTime("연향동")
+		}
 	}
-	return Item
+	return full
 }
 
 func rater(Item item) item {
@@ -105,7 +115,7 @@ func rater(Item item) item {
 }
 
 func sender(w http.ResponseWriter, r *http.Request) {
-	full := thisTime()
+	full := thisTime("연향동")
 	Item := full.Body.Item
 	Item = rater(Item)
 	Item = MixingRatesAndGiveAHangulRate(Item)
@@ -187,6 +197,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", files))
 	http.HandleFunc("/", sender)
 	go open("http://localhost:8080")
+	robotgo.KeyTap("F11")
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Error on ListenAndServe()")
